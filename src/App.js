@@ -3,45 +3,58 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Headers from "./components/Header";
 import Footer from "./components/Footer";
 import { ToDo } from "./components/ToDo";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import AddTodo from "./components/AddTodo";
 
 function App() {
+  //initial check
+  let initTodo;
+  if (localStorage.getItem("todos") === null) {
+    initTodo = [];
+  } else {
+    initTodo = JSON.parse(localStorage.getItem("todos"));
+  }
+
+  const [todos, setTodos] = useState(initTodo);
+
+  //delete todos.
   const onDelete = (todo) => {
-    console.log("Deleted!", todo);
-    setTodos(
-      todos.filter((e) => {
-        return e !== todo;
-      })
+    setTodos(todos.filter((e) => e !== todo));
+    localStorage.setItem(
+      "todos",
+      JSON.stringify(todos.filter((e) => e !== todo))
     );
   };
 
-  const [todos, setTodos] = useState([
-    {
-      Id: 1,
-      title: "Need to Clean Your House",
-      desc: "Today Is the Day To Clean Your House.",
-    },
-    {
-      Id: 2,
-      title: "Go to Market",
-      desc: "Have to Buy Some Grocery.",
-    },
-    {
-      Id: 3,
-      title: "Go for Walk",
-      desc: "Walk up to 5000 steps.",
-    },
-    {
-      Id: 4,
-      title: "Go to Collage",
-      desc: "Today Have to go collage .",
-    },
-  ]);
+  // add todo
+  const addTodo = (title, desc) => {
+    let Id;
+    if (todos.length === 0) {
+      Id = 0;
+    } else {
+      Id = todos[todos.length - 1].Id + 1;
+    }
+    const myTodo = {
+      Id: Id,
+      title: title,
+      desc: desc,
+    };
+    setTodos([...todos, myTodo]);
+
+    localStorage.setItem("todos", JSON.stringify([...todos, myTodo]));
+  };
+
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
 
   return (
     <>
       <Headers />
-      <ToDo todo={todos} onDelete={onDelete} />
+      <div className="container d-flex ">
+        <AddTodo addTodo={addTodo} />
+        <ToDo todo={todos} onDelete={onDelete} />
+      </div>
       <Footer />
     </>
   );
